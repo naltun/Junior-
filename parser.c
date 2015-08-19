@@ -37,7 +37,7 @@ int main(int arg, char** argv) {
 
   /* Language definition */
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                     \
+    "                                                       \
       number     : /-?[0-9]+/ ;                             \
       operator   : '+' | '-' | '*' | '/' ;                  \
       expression : <number> | '(' <operator> <expr>+ ')' ;  \
