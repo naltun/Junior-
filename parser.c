@@ -2,7 +2,6 @@
 
 /* Code to be compiled on Windows */
 #ifdef _WIN32
-#include <string.h>
 
 static char buffer[2048];
 
@@ -25,21 +24,21 @@ void add_history(char* unused) {}
 #include <editline/history.h>
 #endif
 
-int main(int arg, char** argv) {
+int main(int argc, char** argv) {
 
   /* Create Parsers */
-  mpc_parser_t* Number     = mpc_new("number");
-  mpc_parser_t* Operator   = mpc_new("operator");
-  mpc_parser_t* Expression = mpc_new("expression");
-  mpc_parser_t* Junior     = mpc_new("junior");
+  mpc_parser_t* Number      = mpc_new("number");
+  mpc_parser_t* Operator    = mpc_new("operator");
+  mpc_parser_t* Expression  = mpc_new("expression");
+  mpc_parser_t* Junior      = mpc_new("junior");
 
   /* Language definition */
-  mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                       \
-      number     : /-?[0-9]+/ ;                             \
-      operator   : '+' | '-' | '*' | '/' ;                  \
-      expression : <number> | '(' <operator> <expr>+ ')' ;  \
-      junior     : /^/ <operator> <expr>+ /$/ ;             \
+  mpca_lang(MPCA_LANG_DEFAULT, 
+    "                                                             \
+      number     : /-?[0-9]+/ ;                                   \
+      operator   : '+' | '-' | '*' | '/' ;                        \
+      expression : <number> | '(' <operator> <expression>+ ')' ;  \
+      junior     : /^/ <operator> <expression>+ /$/ ;             \
     ",
     Number, Operator, Expression, Junior);
 
@@ -52,7 +51,21 @@ int main(int arg, char** argv) {
 
     add_history(input);
 
-    printf("Now take notice of: %s\n\n", input);
+    /* Parse user input */
+    mpc_result_t r;
+
+    if (mpc_parse("<stdin>", input, Junior, &r)) {
+
+      /* If successful, print and delete AST */
+      mpc_ast_print(r.output);
+      mpc_ast_delete(r.output);
+    } else {
+
+      /* If not successful, print and delete error  */
+      mpc_err_print(r.error);
+      mpc_err_delete(r.error);
+    }
+
     free(input);
   }
 
