@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "mpc.h"
 
 /* Code to be compiled on Windows */
