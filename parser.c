@@ -29,6 +29,22 @@ void add_history(char* unused) {}
 
 int main(int arg, char** argv) {
 
+  /* Create Parsers */
+  mpc_parser_t* Number     = mpc_new("number");
+  mpc_parser_t* Operator   = mpc_new("operator");
+  mpc_parser_t* Expression = mpc_new("expression");
+  mpc_parser_t* Junior     = mpc_new("junior");
+
+  /* Language definition */
+  mpca_lang(MPCA_LANG_DEFAULT,
+    "                                                     \
+      number     : /-?[0-9]+/ ;                             \
+      operator   : '+' | '-' | '*' | '/' ;                  \
+      expression : <number> | '(' <operator> <expr>+ ')' ;  \
+      junior     : /^/ <operator> <expr>+ /$/ ;             \
+    ",
+    Number, Operator, Expression, Junior);
+
   puts("\n\tJunior- Version 0.0.1\nDeveloped by Noah Altunian (github.com/naltun/)\n");
   puts("Press ctrl+C to Exit\n");
 
@@ -42,5 +58,6 @@ int main(int arg, char** argv) {
     free(input);
   }
 
+  mpc_cleanup(4, Number, Operator, Expression, Junior);
   return 0;
 }
