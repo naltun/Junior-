@@ -33,7 +33,8 @@ cc -std=c99 -Wall junior.c mpc.c l-edit -lm -o prompt
 
 On a Windows,
 ```shell
-cc -std=c99 -Wal junior.c mpc.c -o prompt```
+cc -std=c99 -Wal junior.c mpc.c -o prompt
+```
 
 Please be aware, you can change the executable to any name you'd like. However,
 the parameters given to the C Compiler (cc) must be added (which are OS-specific)
