@@ -23,8 +23,7 @@ This should now work.
 On a GNU/Linux (Linux) machine, you can install the editline
 library by using your package management tool
  (eg, ```sudo apt-get``` in Debian/Ubuntu), and typing
-```install libedit-dev```
-This will get you up and running with editline.
+```install libedit-dev```. This will get you up and running with editline.
 
 ####Compiling
 Currently, the method of compiling the current program is as follows:
