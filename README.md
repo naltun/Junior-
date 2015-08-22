@@ -9,13 +9,16 @@ about functional languages.
 
 ###How to run
 ---
-If you are using a Mac, then the ```editline``` library comes with
+If you are using Windows, the behaviour of the ```editline``` library is added
+by default.
+
+If you are using a Mac, then the ```editline``` library already  comes with
 your command line tools. If, however, that you receive an error based on
 this library, remove the line
 ```c
 #include <editline/history.h>
 ```
-This should now work
+This should now work.
 
 On a GNU/Linux (Linux) machine, you can install the editline
 library by using your package management tool
