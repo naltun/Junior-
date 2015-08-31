@@ -30,12 +30,12 @@ Currently, the method of compiling the current program is as follows:
 
 If you are using a Unix/Linux machine (OS X is Unix), then run the command
 ```shell
-cc -std=c99 -Wall junior.c mpc.c l-edit -lm -o prompt
+cc -std=c99 -Wall junior.c mpc.c l-edit -lm -o junior
 ```
 
 On a Windows,
 ```shell
-cc -std=c99 -Wal junior.c mpc.c -o prompt
+cc -std=c99 -Wal junior.c mpc.c -o junior
 ```
 
 Please be aware, you can change the executable to any name you'd like. However,
