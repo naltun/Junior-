@@ -92,9 +92,11 @@ int main(int argc, char** argv) {
 
     if (mpc_parse("<stdin>", input, Junior, &r)) {
 
-      /* If successful, print and delete AST */
-      mpc_ast_print(r.output);
+      /* If evaluation is successful, print result and delete the output regex tree */
+      long result = eval(r.output);
+      printf("%li\n", result);
       mpc_ast_delete(r.output);
+
     } else {
 
       /* If not successful, print and delete error  */
