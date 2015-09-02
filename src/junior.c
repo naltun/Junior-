@@ -34,6 +34,32 @@ long eval_op(long x, char* op, long y){
 
   return 0;
 }
+
+/* eval function evaluates an expression */
+/* For understanding the evaluation structure, look at line 77 */
+long eval(mpc_ast_t* t) {
+
+  /* If a number is tagged, then it returns directly */
+  if (strstr(t->tag, "number")) {
+    return atoi(t->contents);
+  }
+
+  /* Based on the regex tree for Junior-, the operator is always the second child */
+  char* op = t->children[1]->contents;
+
+  /* The third child is always a number, so it gets stored in 'x' */
+  long x = eval(t->children[2]);
+
+  /* Interates over the remaining children and combines them into the expression */
+  int i = 3;
+  while (strstr(t->children[i]->tag, "expression")) {
+    x = eval_op(x, op, eval(t->children[i]));
+    i++
+  }
+
+  return x;
+}
+
 int main(int argc, char** argv) {
 
   /* Create Parsers */
