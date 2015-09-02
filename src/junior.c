@@ -54,7 +54,7 @@ long eval(mpc_ast_t* t) {
   int i = 3;
   while (strstr(t->children[i]->tag, "expression")) {
     x = eval_op(x, op, eval(t->children[i]));
-    i++
+    i++;
   }
 
   return x;
