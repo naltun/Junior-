@@ -24,31 +24,114 @@ void add_history(char* unused) {}
 #include <editline/history.h>
 #endif
 
-/* Use the operator string to compare which operation to perform */
-long eval_op(long x, char* op, long y){
-  if (strcmp(op, "+") == 0) { return x + y; }
-  if (strcmp(op, "-") == 0) { return x - y; }
-  if (strcmp(op, "*") == 0) { return x * y; }
-  if (strcmp(op, "/") == 0) { return x / y; }
-  if (strcmp(op, "%") == 0) { return x % y; }
+/* Create enumeration of possible error types */
+enum { LISP_ERROR_DIV_ZERO, LISP_ERROR_BAD_OP, LISP_ERROR_BAD_NUM };
 
-  return 0;
+/* Create enumeration of possible lisp_value types */
+enum { LISP_VALUE_NUMBER, LISP_VALUE_ERROR };
+
+/* Declare new lisp_value struct */
+typedef struct{
+  int type;
+  long number;
+  int error;
+} lisp_value;
+
+/* Create a new number type for lisp_value */
+lisp_value lisp_value_number(long x) {
+  lisp_value v;
+  v.type = LISP_VALUE_NUMBER;
+  v.number = x;
+
+  return v;
+}
+
+lisp_value lisp_value_error(int x) {
+  lisp_value v;
+  v.type = LISP_VALUE_ERROR;
+  v.error = x;
+
+  return v;
+}
+
+/* Prints a "lisp_value" */
+void lisp_value_print(lisp_value v) {
+  switch (v.type) {
+    
+    /* If the type is a number, it gets printed */
+    /* After print, it 'breaks' out of the switch */
+    case LISP_VALUE_NUMBER: printf("%li", v.number); break;
+
+    /* If the type is an error */
+    case LISP_VALUE_ERROR:
+    
+      /* Checks the type of the error and prints it */
+      if (v.error == LISP_ERROR_DIV_ZERO) {
+        printf("Error: cannot divide by zero!");
+      }
+
+      if (v.error == LISP_ERROR_BAD_OP)   {
+        printf("Error: input contains invalid Operator!");
+      }
+
+      if (v.error == LISP_ERROR_BAD_NUM)  {
+        printf("Error: input contains invalid Number!");
+      }
+
+      break;
+  }
+}
+
+/* Prints a "lisp_value" with a newline */
+void lisp_value_print_line(lisp_value v) { lisp_value_print(v); putchar('\n'); }
+
+lisp_value eval_op(lisp_value x, char* op, lisp_value y) {
+
+  /* If either the x or y value is an error, return value */
+  if (x.type == LISP_VALUE_ERROR) { return x; }
+  if (y.type == LISP_VALUE_ERROR) { return y; }
+
+  /* Otherwise, perform mathematical operations on values x and y */
+  /* Use the operator string to compare which operation to perform */
+  if (strcmp(op, "+") == 0) { return lisp_value_number(x.number + y.number); }
+  if (strcmp(op, "-") == 0) { return lisp_value_number(x.number - y.number); }
+  if (strcmp(op, "*") == 0) { return lisp_value_number(x.number * y.number); }
+  if (strcmp(op, "/") == 0) {
+
+    /* If y is zero return error */
+    return y.number == 0
+      ? lisp_value_error(LISP_ERROR_DIV_ZERO)
+      : lisp_value_number(x.number / y.number);
+  }
+
+  if (strcmp(op, "%") == 0) { 
+
+    /* If y is zero return error */
+    return y.number == 0
+      ? lisp_value_error(LISP_ERROR_DIV_ZERO)
+      : lisp_value_number(x.number % y.number);
+  }
+
+  return lisp_value_error(LISP_ERROR_BAD_OP);
 }
 
 /* eval function evaluates an expression */
 /* For understanding the evaluation structure, look at line 77 */
-long eval(mpc_ast_t* t) {
+lisp_value eval(mpc_ast_t* t) {
 
   /* If a number is tagged, then it returns directly */
   if (strstr(t->tag, "number")) {
-    return atoi(t->contents);
+    /* checks if there is a conversion error */
+    errno = 0;
+    long x = strtol(t->contents, NULL, 10);
+    return errno != ERANGE ? lisp_value_number(x) : lisp_value_error(LISP_ERROR_BAD_NUM);
   }
 
   /* Based on the regex tree for Junior-, the operator is always the second child */
   char* op = t->children[1]->contents;
-
+  
   /* The third child is always a number, so it gets stored in 'x' */
-  long x = eval(t->children[2]);
+  lisp_value x = eval(t->children[2]);
 
   /* Interates over the remaining children and combines them into the expression */
   int i = 3;
@@ -93,10 +176,9 @@ int main(int argc, char** argv) {
     if (mpc_parse("<stdin>", input, Junior, &r)) {
 
       /* If evaluation is successful, print result and delete the output regex tree */
-      long result = eval(r.output);
-      printf("%li\n", result);
+      lisp_value result = eval(r.output);
+      lisp_value_print_line(result);
       mpc_ast_delete(r.output);
-
     } else {
 
       /* If not successful, print and delete error  */
@@ -108,5 +190,6 @@ int main(int argc, char** argv) {
   }
 
   mpc_cleanup(4, Number, Operator, Expression, Junior);
+
   return 0;
 }
