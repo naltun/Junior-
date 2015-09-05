@@ -29,12 +29,12 @@ Currently, the method of compiling the current program is as follows:
 
 If you are using a Unix/Linux machine (OS X is Unix), then run the command
 ```shell
-cc -std=c99 -Wall src/junior.c src/mpc.c l-edit -lm -o junior
+cc -std=c99 -Wall src/junior.c src/libs/mpc.c l-edit -lm -o junior
 ```
 
 On a Windows,
 ```shell
-cc -std=c99 -Wal src/junior.c src/mpc.c -o junior
+cc -std=c99 -Wal src/junior.c src/libs/mpc.c -o junior
 ```
 
 Please be aware, you can change the executable to any name you'd like. However,
