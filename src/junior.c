@@ -1,4 +1,4 @@
-#include "mpc.h"
+#include "libs/mpc.h"
 
 /* Code to be compiled on Windows */
 #ifdef _WIN32
@@ -146,20 +146,22 @@ lisp_value eval(mpc_ast_t* t) {
 int main(int argc, char** argv) {
 
   /* Create Parsers */
-  mpc_parser_t* Number      = mpc_new("number");
-  mpc_parser_t* Operator    = mpc_new("operator");
-  mpc_parser_t* Expression  = mpc_new("expression");
-  mpc_parser_t* Junior      = mpc_new("junior");
+  mpc_parser_t* Number       = mpc_new("number");
+  mpc_parser_t* Symbol       = mpc_new("symbol");
+  mpc_parser_t* Sexpression = mpc_new("sexpression");
+  mpc_parser_t* Expression   = mpc_new("expression");
+  mpc_parser_t* Junior       = mpc_new("junior");
 
   /* Language definition */
   mpca_lang(MPCA_LANG_DEFAULT, 
     "                                                             \
-      number     : /-?[0-9]+/ ;                                   \
-      operator   : '+' | '-' | '*' | '/' | '%' ;                  \
-      expression : <number> | '(' <operator> <expression>+ ')' ;  \
-      junior     : /^/ <operator> <expression>+ /$/ ;             \
+      number      : /-?[0-9]+/ ;                                   \
+      symbol      : '+' | '-' | '*' | '/' | '%' ;                  \
+      sexpression : '(' <expression>* ')' ;                        \
+      expression  : <number> | <symbol> | <sexpression> ;          \
+      junior      : /^/ <operator> <expression>+ /$/ ;             \
     ",
-    Number, Operator, Expression, Junior);
+    Number, Symbol, Sexpression, Expression, Junior);
 
   puts("\n\tJunior- Version 0.0.1\nDeveloped by Noah Altunian (github.com/naltun/)\n");
   puts("Press ctrl+C to Exit\n");
@@ -189,7 +191,7 @@ int main(int argc, char** argv) {
     free(input);
   }
 
-  mpc_cleanup(4, Number, Operator, Expression, Junior);
+  mpc_cleanup(5, Number, Symbol, Sexpression, Expression, Junior);
 
   return 0;
 }
