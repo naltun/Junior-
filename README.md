@@ -45,5 +45,5 @@ in order to be compiled properly.
 ---
 This project is made possible through [Daniel Holden (orangeduck)](https://github.com/orangeduck)
 for both writing the book [Build Your Own Lisp](http://buildyourownlisp.com/)
-as well as providing the MPC library which makes it very to easy to do very
+as well as providing the [MPC library](https://github.com/orangeduck/mpc) which makes it very to easy to do very
 cool things in C.
