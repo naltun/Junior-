@@ -24,6 +24,13 @@ void add_history(char* unused) {}
 #include <editline/history.h>
 #endif
 
+/*************************************************
+** The names for the enumerations and structs   **
+** below can seem intuitive enough; however,    **
+** included in docs/names.txt is a list of the  **
+** expounded meanings just in case :)           **
+*************************************************/
+
 /* Create enumeration of possible error types */
 enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
 
