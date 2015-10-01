@@ -1,0 +1,19 @@
+****************
+**Enumerations**
+****************
+
+LERR_DIV_ZERO => LISP ERROR DIVIDED by ZERO
+
+LERR_BAD_OP   => LISP ERROR BAD OPERATOR
+
+LERR_BAD_NUM  => LISP ERROR BAD NUMBER
+
+LVAL_NUM      => LISP VALUE NUMBER
+
+LVAL_ERR      => LISP VALUE ERROR
+
+***********
+**Structs**
+***********
+
+lval => lisp value
