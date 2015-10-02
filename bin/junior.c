@@ -84,7 +84,29 @@ lval* lval_sexpr(void) {
   v->count = 0;
   v->cell = NULL;
 
-  return v; 
+  return v;
+}
+
+void lval_del(lval* v) {
+  switch (v->type) {
+
+    /* Break if LVAL_NUM */
+    case LVAL_NUM: break;
+
+    /* Free string data from LVAL_ERR and LVAL_SYM */
+    case LVAL_ERR: free(v->err); break;
+    case LVAL_SYM: free(v->sym); break;
+
+    /* If LVAL_SEXPR then delete all elements within */
+    CASE LVAL_SEXPR:
+      for LVAL(int i = 0; i < v->count; i++) {
+        lval_del(v->cell[i]);
+      }
+
+      /* Free the memory allocated to the pointers */
+      free(v->cell);
+    break;
+  }
 }
 
 /* Prints a "lisp_value" */
@@ -113,6 +135,9 @@ void lval_print(lval v) {
 
       break;
   }
+
+  /* Free the memory allocated to the lval struct */
+  free(v);
 }
 
 /* Prints a "lisp_value" with a newline */
