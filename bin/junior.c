@@ -35,13 +35,16 @@ void add_history(char* unused) {}
 enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
 
 /* Create enumeration of possible lisp_value types */
-enum { LVAL_NUM, LVAL_ERR };
+enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_SEXPR };
 
 /* Declare new lisp_value struct */
 typedef struct{
   int type;
   long number;
-  int error;
+  /* Both Error and Symbol types have string data, therefore they are char* */
+  char* error;
+  char* symbol;
+  struct lval** cell;
 } lval;
 
 /* Create a new number type for lisp_value */
@@ -154,7 +157,8 @@ int main(int argc, char** argv) {
 
   /* Create Parsers */
   mpc_parser_t* Number       = mpc_new("number");
-  mpc_parser_t* Operator     = mpc_new("operator");
+  mpc_parser_t* Symbol       = mpc_new("symbol");
+  mpc_parser_t* Sexpr        = mpc_new("sexpr");
   mpc_parser_t* Expression   = mpc_new("expression");
   mpc_parser_t* Junior       = mpc_new("junior");
 
@@ -162,11 +166,12 @@ int main(int argc, char** argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
     "                                                              \
       number      : /-?[0-9]+/ ;                                   \
-      operator    : '+' | '-' | '*' | '/' | '%' ;                  \
-      expression  : <number> | '(' <operator> <expression>+ ')' ;  \
+      symbol      : '+' | '-' | '*' | '/' | '%' ;                  \
+      sexpr       : '(' <expression>* ')' ;                        \
+      expression  : <number> | <symbol> | <sexpr> ;                \
       junior      : /^/ <operator> <expression>+ /$/ ;             \
     ",
-    Number, Operator, Expression, Junior);
+    Number, Symbol, Sexpr, Expression, Junior);
 
   puts("\n\tJunior- Version 0.0.1\nDeveloped by Noah Altunian (github.com/naltun/)\n");
   puts("Press ctrl+C to Exit\n");
@@ -196,7 +201,7 @@ int main(int argc, char** argv) {
     free(input);
   }
 
-  mpc_cleanup(4, Number, Operator, Expression, Junior);
+  mpc_cleanup(5, Number, Symbol, Sexpr, Expression, Junior);
 
   return 0;
 }
