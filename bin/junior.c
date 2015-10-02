@@ -42,8 +42,8 @@ typedef struct{
   int type;
   long number;
   /* Both Error and Symbol types have string data, therefore they are char* */
-  char* error;
-  char* symbol;
+  char* err;
+  char* sym;
   struct lval** cell;
 } lval;
 
@@ -107,6 +107,14 @@ void lval_del(lval* v) {
       free(v->cell);
     break;
   }
+}
+
+lval* lval_add(lval* v, lval* x) {
+  v->count++;
+  v->cell = realloc(v->cell, sizeof(lval*) * v->count);
+  v->cell[v->count - 1] = x;
+
+  return v;
 }
 
 /* Prints a "lisp_value" */
