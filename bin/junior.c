@@ -47,19 +47,42 @@ typedef struct{
   struct lval** cell;
 } lval;
 
-/* Create a new number type for lisp_value */
-lval lval_num(long x) {
-  lval v;
-  v.type = LVAL_NUM;
-  v.number = x;
+/* Create a pointer to a new Number type for lval */
+lval* lval_num(long x) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_NUM;
+  v->num = x;
 
   return v;
 }
 
-lval lval_err(int x) {
-  lval v;
-  v.type = LVAL_ERR;
-  v.error = x;
+/* Create a pointer to a new Error lval */
+lval* lval_err(char* m) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_ERR;
+  v->err = malloc(strlen(m) + 1);
+  strcpy(v->err, m);
+
+  return v;
+}
+
+
+/* Create a pointer to a new Symbol lval */
+lval* lval_sym(char* s) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_SYM;
+  v->sym = malloc(strlen(s) + 1);
+  strcopy(v->sym, s);
+
+  return v;
+}
+
+/* Create a pointer to a new, empty Sexpr lval */
+lval* lval_sexpr(void) {
+  lval* v = malloc(sizeof(lval));
+  v->type = LVAL_SEXPR;
+  v->count = 0;
+  v->cell = NULL;
 
   return v;
 }
