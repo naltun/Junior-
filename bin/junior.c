@@ -84,7 +84,7 @@ lval* lval_sexpr(void) {
   v->count = 0;
   v->cell = NULL;
 
-  return v;
+  return v; 
 }
 
 /* Prints a "lisp_value" */
