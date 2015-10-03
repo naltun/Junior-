@@ -117,6 +117,28 @@ lval* lval_add(lval* v, lval* x) {
   return v;
 }
 
+lval* lval_pop(lval* v, int i) {
+  // Find the item at child 'i'
+  lval* x = v->cell[i];
+
+  // Shifts the memory after child 'i' to the top
+  memmove(&v->cell[i], &v->cell[i+1],
+  sizeof(lval*) * (v->count-i-1));
+
+  // Decrease the count of items in the list
+  v->count--;
+
+  // Reallocate the used memory
+  v->cell = realloc(v->cell, sizeof(lval*) * v->count);
+  return x;
+}
+
+lval* lval_take(lval* v, int i) {
+  lval* x = lval_pop(v, i);
+  lval_del(v);
+  return x;
+}
+
 /* Prints a "lisp_value" */
 void lval_print(lval v) {
   switch (v.type) {
@@ -151,6 +173,47 @@ void lval_print(lval v) {
 /* Forward declaration of lval_print function on line */
 /* This is done in order to call lval_print in the lval_expr_print function before the arguments get defined */
 void lval_print(lval* v);
+
+lval* lval_eval_sexpr(lval* v) {
+
+  /* Evaluates the S-Expression's children */
+  for (int i = 0; i < v->count; i++) {
+    v->cell[i] = lval_eval(v->cell[i]);
+  }
+
+  // Checks for Errors
+  for (int i= 0; i < v->count; i++) {
+    if (v->cell[i]->type == LVAL_ERR) { return lval_take(v, i); }
+  }
+
+  // Returns empty Expression
+  if (v->count == 0) { return v; }
+
+  // Returns single Expression
+  if (v->count == 1) { return lval_take(v, 0); }
+
+  // Checks first element is a Symbol
+  lval* f = lval_pop(v, 0);
+  if (f->type != LVAL_SYM) {
+    lval_del(f); lval_del(v);
+
+    return lval_err("S-expression does not start with a symbol!");
+  }
+
+  // Call builtin function with the operator
+  lval* result = builtin_op(v, f->sym);
+  lval_del(f);
+
+  return result;
+}
+
+lval* lval_eval(lval* v) {
+  // Evaluate S-expressions
+  if (v->type == LVAL_SEXPR) { return lval_eval_sexpr(v); }
+
+  // For all other lval types
+  return v;
+}
 
 void lval_expr_print(lval* v, char open, char close) {
   putchar(open);
