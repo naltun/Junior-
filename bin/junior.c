@@ -418,8 +418,9 @@ int main(int argc, char** argv) {
     if (mpc_parse("<stdin>", input, Junior, &r)) {
 
       /* If evaluation is successful, print result and delete the output regex tree */
-      lval result = eval(r.output);
-      lval_println(result);
+      lval* x = lval_eval(lval_read(r.output));
+      lval_println(x);
+      lval_del(x);
       mpc_ast_delete(r.output);
     } else {
 
