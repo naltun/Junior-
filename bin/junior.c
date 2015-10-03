@@ -31,19 +31,19 @@ void add_history(char* unused) {}
 ** expounded meanings just in case :)           **
 *************************************************/
 
-/* Create enumeration of possible error types */
-enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
-
-/* Create enumeration of possible lisp_value types */
-enum { LVAL_NUM, LVAL_ERR, LVAL_SYM, LVAL_SEXPR };
+/* Create enumeration of possible lisp_value types  */
+enum { LVAL_ERR, LVAL_NUM, LVAL_SYM, LVAL_SEXPR };
 
 /* Declare new lisp_value struct */
-typedef struct{
+typedef struct lval {
   int type;
-  long number;
+  long num;
   /* Both Error and Symbol types have string data, therefore they are char* */
   char* err;
   char* sym;
+  // Count to a list of lval*
+  int count;
+  // Pointer to a list of lval*
   struct lval** cell;
 } lval;
 
@@ -72,7 +72,7 @@ lval* lval_sym(char* s) {
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_SYM;
   v->sym = malloc(strlen(s) + 1);
-  strcopy(v->sym, s);
+  strcpy(v->sym, s);
 
   return v;
 }
@@ -88,6 +88,7 @@ lval* lval_sexpr(void) {
 }
 
 void lval_del(lval* v) {
+
   switch (v->type) {
 
     /* Break if LVAL_NUM */
@@ -98,8 +99,8 @@ void lval_del(lval* v) {
     case LVAL_SYM: free(v->sym); break;
 
     /* If LVAL_SEXPR then delete all elements within */
-    CASE LVAL_SEXPR:
-      for LVAL(int i = 0; i < v->count; i++) {
+    case LVAL_SEXPR:
+      for (int i = 0; i < v->count; i++) {
         lval_del(v->cell[i]);
       }
 
@@ -107,12 +108,15 @@ void lval_del(lval* v) {
       free(v->cell);
     break;
   }
+
+  /* Free the allocated memory for lval struct */
+  free(v);
 }
 
 lval* lval_add(lval* v, lval* x) {
   v->count++;
   v->cell = realloc(v->cell, sizeof(lval*) * v->count);
-  v->cell[v->count - 1] = x;
+  v->cell[v->count-1] = x;
 
   return v;
 }
@@ -139,40 +143,89 @@ lval* lval_take(lval* v, int i) {
   return x;
 }
 
-/* Prints a "lisp_value" */
-void lval_print(lval v) {
-  switch (v.type) {
-
-    /* If the type is a number, it gets printed */
-    /* After print, it 'breaks' out of the switch */
-    case LVAL_NUM: printf("%li", v.number); break;
-
-    /* If the type is an error */
-    case LVAL_ERR:
-
-      /* Checks the type of the error and prints it */
-      if (v.error == LERR_DIV_ZERO) {
-        printf("Error: cannot divide by zero!");
-      }
-
-      if (v.error == LERR_BAD_OP)   {
-        printf("Error: input contains invalid Operator!");
-      }
-
-      if (v.error == LERR_BAD_NUM)  {
-        printf("Error: input contains invalid Number!");
-      }
-
-      break;
-  }
-
-  /* Free the memory allocated to the lval struct */
-  free(v);
-}
-
 /* Forward declaration of lval_print function on line */
 /* This is done in order to call lval_print in the lval_expr_print function before the arguments get defined */
 void lval_print(lval* v);
+
+void lval_expr_print(lval* v, char open, char close) {
+  putchar(open);
+  for (int i = 0; i < v->count; i++) {
+
+    /* Prints value */
+    lval_print(v->cell[i]);
+
+    /* If the last element has trailing space, doesn't print */
+    if (i != (v->count - 1)) {
+      putchar(' ');
+    }
+  }
+  putchar(close);
+}
+
+void lval_print(lval* v) {
+  switch(v->type) {
+
+    case LVAL_NUM: printf("%li", v->num); break;
+    case LVAL_ERR: printf("Error! %s", v->err); break;
+    case LVAL_SYM: printf("%s", v->sym); break;
+    case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
+  }
+}
+
+void lval_println(lval* v) { lval_print(v); putchar('\n'); }
+
+lval* builtin_op(lval* a, char* op) {
+
+  // Checks that all arguments are numbers
+  for (int i = 0; i < a->count; i++) {
+    if (a->cell[i]->type != LVAL_NUM) {
+      lval_del(a);
+      return lval_err("Cannot operate on a non-number!");
+    }
+  }
+
+  // Pops the first element
+  lval* x = lval_pop(a, 0);
+
+  // If there are no arguments and sub then perform a unary negation
+  if ((strcmp(op, "-") == 0) && a->count == 0) {
+    x->num = -x->num;
+  }
+
+  // While further elements remain
+  while (a->count > 0) {
+
+    // Pops the next element as before
+    lval* y = lval_pop(a, 0);
+
+    if (strcmp(op, "+") == 0) { x->num += y->num; }
+    if (strcmp(op, "-") == 0) { x->num -= y->num; }
+    if (strcmp(op, "*") == 0) { x->num *= y->num; }
+
+    if (strcmp(op, "/") == 0) {
+      if (y->num == 0) {
+        lval_del(x); lval_del(y);
+        x = lval_err("Error: you can't divide by Zero!"); break;
+      }
+      x->num /= y->num;
+    }
+
+    if (strcmp(op, "%") == 0) {
+      if (y->num == 0) {
+        lval_del(x); lval_del(y);
+        x = lval_err("Error: cannot perform modulus with Zero!"); break;
+      }
+      x->num = x->num % y->num;
+    }
+
+    lval_del(y);
+  }
+
+  lval_del(a);
+  return x;
+}
+
+lval* lval_eval(lval* v);
 
 lval* lval_eval_sexpr(lval* v) {
 
@@ -215,142 +268,6 @@ lval* lval_eval(lval* v) {
   return v;
 }
 
-void lval_expr_print(lval* v, char open, char close) {
-  putchar(open);
-  for (int i = 0; i < v->count; i++) {
-
-    /* Prints value */
-    lval_print(v->cell[i]);
-
-    /* If the last element has trailing space, doesn't print */
-    if (i != (v->count - 1)) {
-      putchar(' ');
-    }
-  }
-  putchar(close);
-}
-
-void lval_print(lval* v) {
-  switch(v->type) {
-
-    case LVAL_NUM: printf("%li", v->num); break;
-    case LVAL_ERR: printf("Error! %s", v->err); break;
-    case LVAL_SYM: printf("%s", v->sym); break;
-    case LVAL_SEXPR: lval_expr_print(v, '(', ')'); break;
-  }
-}
-
-/* Prints lval with a newline */
-void lval_println(lval* v) { lval_print(v); putchar('\n'); }
-
-lval* builtin_op(lval* a, char* op) {
-
-  // Checks that all arguments are numbers
-  for (int i = 0; i < a->count; i++) {
-    if (a->cell[i]->type != LVAL_NUM) {
-      lval_del(a);
-      return lval_err("Cannot operate on a non-number!");
-    }
-  }
-
-  // Pops the first element
-  lval* x = lval_pop(a, 0);
-
-  // If there are no arguments and sub then perform a unary negation
-  if ((strcmp(op, "-") == 0) && a->count == 0) {
-    x->num = -x->num;
-  }
-
-  // While further elements remain
-  while (a->count > 0) {
-
-    // Pops the next element as before
-    lval* y = lval_pop(a, 0);
-
-    if (strcmp(op, "+") == 0) { x->num += y->num; }
-    if (strcmp(op, "-") == 0) { x->num -= y->num; }
-    if (strcmp(op, "*") == 0) { x->num *= y->num; }
-    if (strcmp(op, "/") == 0) {
-      if (y->num == 0) {
-        lval_del(x); lval_del(y);
-        x = lval_err("Error: you can't divide by Zero!"); break;
-      }
-      x->num /= y->num;
-    }
-
-    if (strcmp(op, "%") == 0) {
-      if (y->num == 0) {
-        lval_del(x); lval_del(y);
-        x = lval_err("Error: cannot perform modulus with Zero!"); break;
-      }
-      x->num = x->num % y->num;
-    }
-
-    lval_del(y);
-  }
-
-  lval_del(a);
-  return x;
-}
-
-lval eval_op(lval x, char* op, lval y) {
-
-  /* If either the x or y value is an error, return value */
-  if (x.type == LVAL_ERR) { return x; }
-  if (y.type == LVAL_ERR) { return y; }
-
-  /* Otherwise, perform mathematical operations on values x and y */
-  /* Use the operator string to compare which operation to perform */
-  if (strcmp(op, "+") == 0) { return lval_num(x.number + y.number); }
-  if (strcmp(op, "-") == 0) { return lval_num(x.number - y.number); }
-  if (strcmp(op, "*") == 0) { return lval_num(x.number * y.number); }
-  if (strcmp(op, "/") == 0) {
-
-    /* If y is zero return error */
-    return y.number == 0
-      ? lval_err(LERR_DIV_ZERO)
-      : lval_num(x.number / y.number);
-  }
-
-  if (strcmp(op, "%") == 0) {
-
-    /* If y is zero return error */
-    return y.number == 0
-      ? lval_err(LERR_DIV_ZERO)
-      : lval_num(x.number % y.number);
-  }
-
-  return lval_err(LERR_BAD_OP);
-}
-
-/* eval function evaluates an expression */
-/* For understanding the evaluation structure, look at line 77 */
-lval eval(mpc_ast_t* t) {
-
-  /* If a number is tagged, then it returns directly */
-  if (strstr(t->tag, "number")) {
-    /* checks if there is a conversion error */
-    errno = 0;
-    long x = strtol(t->contents, NULL, 10);
-    return errno != ERANGE ? lval_num(x) : lval_err(LERR_BAD_NUM);
-  }
-
-  /* Based on the regex tree for Junior-, the operator is always the second child */
-  char* op = t->children[1]->contents;
-
-  /* The third child is always a number, so it gets stored in 'x' */
-  lval x = eval(t->children[2]);
-
-  /* Interates over the remaining children and combines them into the expression */
-  int i = 3;
-  while (strstr(t->children[i]->tag, "expression")) {
-    x = eval_op(x, op, eval(t->children[i]));
-    i++;
-  }
-
-  return x;
-}
-
 lval* lval_read_num(mpc_ast_t* t) {
   errno = 0;
   long x = strtol(t->contents, NULL, 10);
@@ -378,9 +295,9 @@ lval* lval_read(mpc_ast_t* t) {
     if (strcmp(t->children[i]->tag,  "regex") == 0) { continue; }
 
     x = lval_add(x, lval_read(t->children[i]));
-
-    return x;
   }
+
+  return x;
 }
 
 int main(int argc, char** argv) {
