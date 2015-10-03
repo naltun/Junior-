@@ -306,7 +306,7 @@ int main(int argc, char** argv) {
 
       /* If evaluation is successful, print result and delete the output regex tree */
       lval result = eval(r.output);
-      Lval_printlin(result);
+      lval_println(result);
       mpc_ast_delete(r.output);
     } else {
 
