@@ -1,0 +1,1 @@
+Junior- is unlike other Lisps in that it does not have the 'Macros' functionality - instead, Junior- has what is called Q-Expressions, or 'quoted expressions. Macros in other Lisps are used to stop evaluation; in Junior-, Q-Expressions will accomplish the same task.
