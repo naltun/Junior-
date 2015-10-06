@@ -238,6 +238,56 @@ lval* builtin_op(lval* a, char* op) {
 
 lval* lval_eval(lval* v);
 
+lval* builtin_head(lval* a) {
+  // Checks for Error conditions
+  if (a->count != 1) {
+    lval_del(a);
+    return lval_err("Function 'head' has too many arguments!");
+  }
+  
+  if (a->cell[0]->type != LVAL_QEXPR) {
+    lval_del(a);
+    return lval_err("Function 'head' passed with incorrect types!");
+  }
+  
+  if (a->cell[0]->count == 0) {
+    lval_del(a);
+    return lval_err("Function 'head' passed with {}!");
+  }
+  
+  // Takes first argument if no errors 
+  lval* v = lval_take(a, 0);
+  
+  // Delete all elements that are not the head and return v
+  while (v->count > 1) { lval_del(lval_pop(v, 1)); }
+  return v;
+}
+
+lval* builtin_tail(lval* a) {
+  // Checks for Error conditions
+  if (a->count != 1) {
+    lval_del(a);
+    return lval_err("Function 'tail' has too many arguments!");
+  }
+  
+  if (a->cell[0]->type != LVAL_QEXPR) {
+    lval_del(a);
+    return lval_err("Function 'tail' passed with incorrect types!");
+  }
+  
+  if (a->cell[0]->count == 0) {
+    lval_del(a);
+    return lval_err("Function 'tail' passed with {}!");
+  }
+  
+  // Takes first argument if no errors
+  lval* v = lval_take(a, 0);
+  
+  // Delete the first element and return v
+  lval_del(lval_pop(v, 0));
+  return v;
+}
+
 lval* lval_eval_sexpr(lval* v) {
 
   /* Evaluates the S-Expression's children */
@@ -317,12 +367,12 @@ lval* lval_read(mpc_ast_t* t) {
 int main(int argc, char** argv) {
 
   /* Create Parsers */
-  mpc_parser_t* Number       = mpc_new("number");
-  mpc_parser_t* Symbol       = mpc_new("symbol");
-  mpc_parser_t* Sexpr        = mpc_new("sexpr");
-  mpc_parser_t* Qexpr        = mpc_new("qexpr");
-  mpc_parser_t* Expression   = mpc_new("expression");
-  mpc_parser_t* Junior       = mpc_new("junior");
+  mpc_parser_t* Number      = mpc_new("number");
+  mpc_parser_t* Symbol      = mpc_new("symbol");
+  mpc_parser_t* Sexpr       = mpc_new("sexpr");
+  mpc_parser_t* Qexpr       = mpc_new("qexpr");
+  mpc_parser_t* Expression  = mpc_new("expression");
+  mpc_parser_t* Junior      = mpc_new("junior");
 
   /* Language definition */
   mpca_lang(MPCA_LANG_DEFAULT,
