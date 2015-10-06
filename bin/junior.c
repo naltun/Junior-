@@ -306,19 +306,21 @@ int main(int argc, char** argv) {
   mpc_parser_t* Number       = mpc_new("number");
   mpc_parser_t* Symbol       = mpc_new("symbol");
   mpc_parser_t* Sexpr        = mpc_new("sexpr");
+  mpc_parser_t* Qexor        = mpc_new("qexpr");
   mpc_parser_t* Expression   = mpc_new("expression");
   mpc_parser_t* Junior       = mpc_new("junior");
 
   /* Language definition */
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                \
-      number      : /-?[0-9]+/ ;                     \
-      symbol      : '+' | '-' | '*' | '/' | '%' ;    \
-      sexpr       : '(' <expression>* ')' ;          \
-      expression  : <number> | <symbol> | <sexpr> ;  \
-      junior      : /^/ <expression>* /$/ ;          \
+    "                                               \
+      number     : /-?[0-9]+/ ;                     \
+      symbol     : '+' | '-' | '*' | '/' | '%' ;    \
+      sexpr      : '(' <expression>* ')' ;          \
+      qexpr      : '{' <expression>* '}' ;          \
+      expression : <number> | <symbol> | <sexpr> ;  \
+      junior     : /^/ <expression>* /$/ ;          \
     ",
-    Number, Symbol, Sexpr, Expression, Junior);
+    Number, Symbol, Sexpr, Qexpr, Expression, Junior);
 
   puts("\n\tJunior- Version 0.0.1\nDeveloped by Noah Altunian (github.com/naltun/)\n");
   puts("Press ctrl+C to Exit\n");
@@ -349,7 +351,7 @@ int main(int argc, char** argv) {
     free(input);
   }
 
-  mpc_cleanup(5, Number, Symbol, Sexpr, Expression, Junior);
+  mpc_cleanup(6, Number, Symbol, Sexpr, Qexpr, Expression, Junior);
 
   return 0;
 }
