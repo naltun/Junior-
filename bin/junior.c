@@ -311,12 +311,12 @@ int main(int argc, char** argv) {
 
   /* Language definition */
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                              \
-      number      : /-?[0-9]+/ ;                                   \
-      symbol      : '+' | '-' | '*' | '/' | '%' ;                  \
-      sexpr       : '(' <expression>* ')' ;                        \
-      expression  : <number> | <symbol> | <sexpr> ;                \
-      junior      : /^/ <operator> <expression>+ /$/ ;             \
+    "                                                \
+      number      : /-?[0-9]+/ ;                     \
+      symbol      : '+' | '-' | '*' | '/' | '%' ;    \
+      sexpr       : '(' <expression>* ')' ;          \
+      expression  : <number> | <symbol> | <sexpr> ;  \
+      junior      : /^/ <expression>* /$/ ;          \
     ",
     Number, Symbol, Sexpr, Expression, Junior);
 
