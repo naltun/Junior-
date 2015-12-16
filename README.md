@@ -1,6 +1,6 @@
 #Junior-
 
-Hello. Currently this is a project in the works.
+##Hello. Currently this is being redesigned [here](https://github.com/naltun/junior) and there will be no further modifications to this software, unless otherwise noted.
 
 Junior- is a dialect of Lisp. I am making this project to understand
 more of the C language, learn how to program my own language, and learn more
